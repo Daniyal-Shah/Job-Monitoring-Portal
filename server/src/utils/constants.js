@@ -3,9 +3,11 @@
 export const APPLICATION_STATUSES = [
   'discovered',
   'applied',
+  'challan_paid',
   'eligibility_review',
   'eligible',
   'not_eligible',
+  'awaiting_test_date',
   'test_scheduled',
   'test_appeared',
   'test_passed',
@@ -21,9 +23,11 @@ export const APPLICATION_STATUSES = [
 export const STATUS_LABELS = {
   discovered: 'Discovered (not applied)',
   applied: 'Applied',
+  challan_paid: 'Challan paid & waiting for test date',
   eligibility_review: 'Eligibility verification',
   eligible: 'Eligible',
   not_eligible: 'Not eligible',
+  awaiting_test_date: 'Waiting for test date',
   test_scheduled: 'Test scheduled',
   test_appeared: 'Test appeared',
   test_passed: 'Test passed',

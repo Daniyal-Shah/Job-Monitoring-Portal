@@ -1,7 +1,8 @@
 const bool = (v, d = false) => (v === undefined || v === '' ? d : ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase()));
 const list = (v) => (v || '').split(',').map((s) => s.trim()).filter(Boolean);
 
-const clientUrls = list(process.env.CLIENT_URL || 'http://localhost:5173');
+// Browser origins never end in "/", so strip trailing slashes for exact CORS matching.
+const clientUrls = list(process.env.CLIENT_URL || 'http://localhost:5173').map((u) => u.replace(/\/+$/, ''));
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',

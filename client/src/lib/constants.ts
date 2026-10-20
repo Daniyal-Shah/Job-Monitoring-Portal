@@ -1,7 +1,7 @@
 // Keep in sync with server/src/utils/constants.js
 
 export const APPLICATION_STATUSES = [
-  'discovered', 'applied', 'eligibility_review', 'eligible', 'not_eligible', 'test_scheduled', 'test_appeared',
+  'discovered', 'applied', 'challan_paid', 'eligibility_review', 'eligible', 'not_eligible', 'awaiting_test_date', 'test_scheduled', 'test_appeared',
   'test_passed', 'test_failed', 'interview_scheduled', 'interviewed', 'merit_list', 'selected', 'not_selected', 'withdrawn',
 ] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
@@ -9,9 +9,11 @@ export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
 export const STATUS_LABELS: Record<ApplicationStatus, string> = {
   discovered: 'Not applied yet',
   applied: 'Applied',
+  challan_paid: 'Challan paid & waiting for test date',
   eligibility_review: 'Eligibility verification',
   eligible: 'Eligible',
   not_eligible: 'Not eligible',
+  awaiting_test_date: 'Waiting for test date',
   test_scheduled: 'Test scheduled',
   test_appeared: 'Test appeared',
   test_passed: 'Test passed',
@@ -27,9 +29,11 @@ export const STATUS_LABELS: Record<ApplicationStatus, string> = {
 export const STATUS_TONE: Record<ApplicationStatus, Tone> = {
   discovered: 'slate',
   applied: 'blue',
+  challan_paid: 'teal',
   eligibility_review: 'amber',
   eligible: 'teal',
   not_eligible: 'red',
+  awaiting_test_date: 'amber',
   test_scheduled: 'violet',
   test_appeared: 'violet',
   test_passed: 'teal',
@@ -47,9 +51,9 @@ export const CLOSED_STATUSES: ApplicationStatus[] = ['not_eligible', 'test_faile
 // Recruitment pipeline stages shown as a progress bar.
 export const PIPELINE: { label: string; statuses: ApplicationStatus[] }[] = [
   { label: 'Found', statuses: ['discovered'] },
-  { label: 'Applied', statuses: ['applied'] },
+  { label: 'Applied', statuses: ['applied', 'challan_paid'] },
   { label: 'Eligibility', statuses: ['eligibility_review', 'eligible', 'not_eligible'] },
-  { label: 'Test', statuses: ['test_scheduled', 'test_appeared', 'test_passed', 'test_failed'] },
+  { label: 'Test', statuses: ['awaiting_test_date', 'test_scheduled', 'test_appeared', 'test_passed', 'test_failed'] },
   { label: 'Interview', statuses: ['interview_scheduled', 'interviewed'] },
   { label: 'Merit', statuses: ['merit_list'] },
   { label: 'Result', statuses: ['selected', 'not_selected'] },

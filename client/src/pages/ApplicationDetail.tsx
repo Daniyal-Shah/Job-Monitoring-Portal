@@ -9,7 +9,7 @@ import { APPLICATION_STATUSES, EVENT_LABELS, FEE_STATUSES, FEE_LABELS, STATUS_LA
 import { daysUntil, fmtDate, fmtDateTime, money, relativeDays, toDateInput } from '../lib/format';
 import type { Application, Doc, RecruitmentEvent } from '../lib/types';
 import { DeadlineBadge, FeeBadge, Pipeline, StatusBadge, feeState } from '../components/badges';
-import { DocumentList, UploadButton } from '../components/Documents';
+import { DocumentList, FilePicker, UploadButton, uploadDocument } from '../components/Documents';
 import { EventModal } from '../components/EventModal';
 import { Badge, Button, Card, Checkbox, ConfirmModal, DescriptionList, EmptyState, ErrorState, Field, Input, Loading, MemberChip, Modal, PageHeader, Select, Textarea, cx } from '../components/ui';
 
@@ -236,13 +236,18 @@ function StatusModal({ open, onClose, app }: { open: boolean; onClose: () => voi
   const [status, setStatus] = useState<ApplicationStatus>(app.status);
   const [note, setNote] = useState('');
   const [notify, setNotify] = useState(true);
+  const [receipt, setReceipt] = useState<File | null>(null);
   useEffect(() => {
     if (open) {
       setStatus(app.status);
       setNote('');
+      setReceipt(null);
     }
   }, [open, app.status]);
-  const save = useAction(() => api.post(`/applications/${app._id}/status`, { status, note, notify }), 'Status updated');
+  const save = useAction(async () => {
+    await api.post(`/applications/${app._id}/status`, { status, note, notify });
+    if (receipt && status === 'challan_paid') await uploadDocument(receipt, { application: app._id }, 'paid_challan', `Paid challan – ${app.job.title}`);
+  }, 'Status updated');
   return (
     <Modal
       open={open}
@@ -269,6 +274,12 @@ function StatusModal({ open, onClose, app }: { open: boolean; onClose: () => voi
             ))}
           </Select>
         </Field>
+        {status === 'challan_paid' && (
+          <>
+            <p className="rounded-lg bg-teal-50 px-3 py-2 text-sm text-teal-800">The challan will be marked as paid and payment reminders will stop.</p>
+            <FilePicker label="Paid challan receipt (optional)" hint="Photo or PDF of the stamped challan." file={receipt} onChange={setReceipt} />
+          </>
+        )}
         <Field label="Note" hint="Shown in the timeline, e.g. result details or instructions.">
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
@@ -349,11 +360,21 @@ function FeeModal({ open, onClose, app }: { open: boolean; onClose: () => void; 
     notes: app.fee.notes || '',
   });
   const [form, setForm] = useState(init);
+  const [receipt, setReceipt] = useState<File | null>(null);
   useEffect(() => {
-    if (open) setForm(init());
+    if (open) {
+      setForm(init());
+      setReceipt(null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-  const save = useAction(() => api.patch(`/applications/${app._id}`, { fee: { ...form, paidDate: form.status === 'paid' ? form.paidDate : '' } }), 'Challan details saved');
+  const save = useAction(async () => {
+    await api.patch(`/applications/${app._id}`, { fee: { ...form, paidDate: form.status === 'paid' ? form.paidDate : '' } });
+    if (receipt) {
+      const type = form.status === 'paid' ? 'paid_challan' : 'challan_form';
+      await uploadDocument(receipt, { application: app._id }, type, `${form.status === 'paid' ? 'Paid challan' : 'Challan form'} – ${app.job.title}`);
+    }
+  }, 'Challan details saved');
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
   return (
     <Modal
@@ -399,6 +420,14 @@ function FeeModal({ open, onClose, app }: { open: boolean; onClose: () => void; 
         <Field label="Notes" className="sm:col-span-2">
           <Textarea value={form.notes} onChange={set('notes')} />
         </Field>
+        <div className="sm:col-span-2">
+          <FilePicker
+            label={form.status === 'paid' ? 'Paid challan receipt' : 'Challan form'}
+            hint="Optional. Photo (JPG/PNG) or PDF — saved to this application's documents."
+            file={receipt}
+            onChange={setReceipt}
+          />
+        </div>
       </div>
     </Modal>
   );

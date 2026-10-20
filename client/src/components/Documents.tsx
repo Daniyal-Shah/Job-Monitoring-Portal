@@ -23,6 +23,39 @@ export async function openDocument(doc: Pick<Doc, '_id'>, download = false) {
 
 const isImage = (d: Doc) => d.mimeType?.startsWith('image/');
 
+export function uploadDocument(file: File, target: { application?: string; job?: string }, type: DocumentType, title?: string) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('type', type);
+  if (title) fd.append('title', title);
+  if (target.application) fd.append('application', target.application);
+  else if (target.job) fd.append('job', target.job);
+  return api.post('/documents', fd);
+}
+
+/** Inline file picker for attaching a receipt inside another form. */
+export function FilePicker({ label, hint, file, onChange }: { label: string; hint?: string; file: File | null; onChange: (f: File | null) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <span className="label">{label}</span>
+      <div className="flex items-center gap-3 rounded-lg border border-dashed border-slate-300 px-3 py-2.5">
+        <Button type="button" size="sm" variant="secondary" icon={<Upload className="size-4" />} onClick={() => ref.current?.click()}>
+          {file ? 'Change' : 'Choose file'}
+        </Button>
+        <span className="min-w-0 flex-1 truncate text-sm text-slate-600">{file ? `${file.name} (${fileSize(file.size)})` : 'No file chosen'}</span>
+        {file && (
+          <button type="button" className="text-xs text-slate-500 hover:text-red-600" onClick={() => onChange(null)}>
+            Remove
+          </button>
+        )}
+        <input ref={ref} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => onChange(e.target.files?.[0] || null)} />
+      </div>
+      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
+    </div>
+  );
+}
+
 export function DocumentRow({ doc, canDelete = true, showContext }: { doc: Doc; canDelete?: boolean; showContext?: boolean }) {
   const [confirm, setConfirm] = useState(false);
   const del = useAction(() => api.del(`/documents/${doc._id}`), 'Document deleted');
@@ -85,18 +118,7 @@ export function UploadButton({ job, application, types = [...DOCUMENT_TYPES], de
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const upload = useAction(
-    () => {
-      const fd = new FormData();
-      fd.append('file', file!);
-      fd.append('type', type);
-      if (title.trim()) fd.append('title', title.trim());
-      if (application) fd.append('application', application);
-      else if (job) fd.append('job', job);
-      return api.post('/documents', fd);
-    },
-    'Document uploaded',
-  );
+  const upload = useAction(() => uploadDocument(file!, { application, job }, type, title.trim() || undefined), 'Document uploaded');
 
   const close = () => {
     setOpen(false);

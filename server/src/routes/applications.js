@@ -145,7 +145,12 @@ router.post('/:id/status', async (req, res) => {
   );
   const app = await loadApplication(req);
   app.status = body.status;
-  if (body.status === 'applied' && !app.appliedDate) app.appliedDate = body.date || todayStart();
+  if (['applied', 'challan_paid'].includes(body.status) && !app.appliedDate) app.appliedDate = body.date || todayStart();
+  // Paying the challan settles the fee, which also stops challan reminders.
+  if (body.status === 'challan_paid' && app.fee?.status === 'unpaid') {
+    app.fee.status = 'paid';
+    app.fee.paidDate = app.fee.paidDate || body.date || todayStart();
+  }
   app.timeline.push({ status: body.status, note: body.note, date: body.date || new Date(), by: req.user.id, byName: req.user.name });
   await app.save();
   const entry = app.timeline.at(-1);
