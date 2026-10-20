@@ -1,5 +1,15 @@
 // PM2 config for the VPS: `pm2 start ecosystem.config.cjs && pm2 save`
-// Run a single instance so the reminder scheduler doesn't fire twice.
+// Fork mode (not cluster): PM2's cluster mode can't load ES modules, and a
+// single process keeps the reminder scheduler from firing twice.
 module.exports = {
-  apps: [{ name: 'job-portal-api', script: 'src/index.js', node_args: '--env-file=.env', instances: 1, env: { NODE_ENV: 'production' } }],
+  apps: [
+    {
+      name: 'job-portal-api',
+      script: 'src/index.js',
+      cwd: __dirname,
+      exec_mode: 'fork',
+      node_args: '--env-file=.env',
+      env: { NODE_ENV: 'production' },
+    },
+  ],
 };
