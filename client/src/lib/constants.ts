@@ -12,7 +12,7 @@ export const STATUS_LABELS: Record<ApplicationStatus, string> = {
   challan_paid: 'Challan paid & waiting for test date',
   eligibility_review: 'Eligibility verification',
   eligible: 'Eligible',
-  not_eligible: 'Not eligible',
+  not_eligible: 'Application rejected',
   awaiting_test_date: 'Waiting for test date',
   test_scheduled: 'Test scheduled',
   test_appeared: 'Test appeared',
@@ -46,13 +46,17 @@ export const STATUS_TONE: Record<ApplicationStatus, Tone> = {
   withdrawn: 'slate',
 };
 
+// Kept only so older applications still display; no longer offered when changing status.
+export const LEGACY_STATUSES: ApplicationStatus[] = ['eligibility_review', 'eligible'];
+export const SELECTABLE_STATUSES = APPLICATION_STATUSES.filter((s) => !LEGACY_STATUSES.includes(s));
+
 export const CLOSED_STATUSES: ApplicationStatus[] = ['not_eligible', 'test_failed', 'selected', 'not_selected', 'withdrawn'];
 
 // Recruitment pipeline stages shown as a progress bar.
 export const PIPELINE: { label: string; statuses: ApplicationStatus[] }[] = [
   { label: 'Found', statuses: ['discovered'] },
-  { label: 'Applied', statuses: ['applied', 'challan_paid'] },
-  { label: 'Eligibility', statuses: ['eligibility_review', 'eligible', 'not_eligible'] },
+  { label: 'Applied', statuses: ['applied', 'not_eligible', ...LEGACY_STATUSES] },
+  { label: 'Challan paid', statuses: ['challan_paid'] },
   { label: 'Test', statuses: ['awaiting_test_date', 'test_scheduled', 'test_appeared', 'test_passed', 'test_failed'] },
   { label: 'Interview', statuses: ['interview_scheduled', 'interviewed'] },
   { label: 'Merit', statuses: ['merit_list'] },

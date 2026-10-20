@@ -5,7 +5,7 @@ import { ArrowLeft, CalendarPlus, CheckCircle2, ExternalLink, MapPin, Pencil, Re
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAction } from '../lib/hooks';
-import { APPLICATION_STATUSES, EVENT_LABELS, FEE_STATUSES, FEE_LABELS, STATUS_LABELS, type ApplicationStatus, type FeeStatus } from '../lib/constants';
+import { EVENT_LABELS, LEGACY_STATUSES, SELECTABLE_STATUSES, FEE_STATUSES, FEE_LABELS, STATUS_LABELS, type ApplicationStatus, type FeeStatus } from '../lib/constants';
 import { daysUntil, fmtDate, fmtDateTime, money, relativeDays, toDateInput } from '../lib/format';
 import type { Application, Doc, RecruitmentEvent } from '../lib/types';
 import { DeadlineBadge, FeeBadge, Pipeline, StatusBadge, feeState } from '../components/badges';
@@ -77,7 +77,7 @@ export default function ApplicationDetailPage() {
           </div>
           {app.status === 'discovered' && <DeadlineBadge date={job.lastDate} />}
         </div>
-        <Pipeline status={app.status} />
+        <Pipeline status={app.status} fee={app.fee} />
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -267,7 +267,7 @@ function StatusModal({ open, onClose, app }: { open: boolean; onClose: () => voi
       <div className="space-y-4">
         <Field label="New status">
           <Select value={status} onChange={(e) => setStatus(e.target.value as ApplicationStatus)}>
-            {APPLICATION_STATUSES.map((s) => (
+            {[...(LEGACY_STATUSES.includes(app.status) ? [app.status] : []), ...SELECTABLE_STATUSES].map((s) => (
               <option key={s} value={s}>
                 {STATUS_LABELS[s]}
               </option>

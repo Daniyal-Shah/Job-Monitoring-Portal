@@ -26,7 +26,7 @@ export const STATUS_LABELS = {
   challan_paid: 'Challan paid & waiting for test date',
   eligibility_review: 'Eligibility verification',
   eligible: 'Eligible',
-  not_eligible: 'Not eligible',
+  not_eligible: 'Application rejected',
   awaiting_test_date: 'Waiting for test date',
   test_scheduled: 'Test scheduled',
   test_appeared: 'Test appeared',

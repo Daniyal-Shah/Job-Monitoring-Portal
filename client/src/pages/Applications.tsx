@@ -4,7 +4,7 @@ import { ClipboardList, Search } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useJobFilters, useMembers } from '../lib/hooks';
-import { APPLICATION_STATUSES, STATUS_LABELS } from '../lib/constants';
+import { SELECTABLE_STATUSES, STATUS_LABELS } from '../lib/constants';
 import type { Application } from '../lib/types';
 import { DeadlineBadge, FeeBadge, StatusBadge } from '../components/badges';
 import { EmptyState, ErrorState, Input, Loading, MemberChip, PageHeader, Pagination, Select } from '../components/ui';
@@ -63,7 +63,7 @@ export default function ApplicationsPage() {
           <option value="">All statuses</option>
           <option value="stage:active">In progress (open)</option>
           <option value="stage:closed">Closed</option>
-          {APPLICATION_STATUSES.map((s) => (
+          {SELECTABLE_STATUSES.map((s) => (
             <option key={s} value={s}>
               {STATUS_LABELS[s]}
             </option>
